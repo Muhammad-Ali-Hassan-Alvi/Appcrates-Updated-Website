@@ -29,6 +29,19 @@ export function Header() {
     return () => obs.disconnect()
   }, [])
 
+  useEffect(() => {
+    document.body.classList.toggle('nav-open', open)
+    return () => document.body.classList.remove('nav-open')
+  }, [open])
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 980) setOpen(false)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   const closeMenu = () => setOpen(false)
 
   return (

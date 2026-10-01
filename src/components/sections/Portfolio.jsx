@@ -51,11 +51,22 @@ export function Portfolio() {
     const center = centerRef.current
     if (!stage || !pfTop || !pfBot) return
 
+    function isMobileLayout() {
+      return window.matchMedia('(max-width: 700px)').matches
+    }
+
+    function resetRows() {
+      pfTop.style.transform = ''
+      pfBot.style.transform = ''
+      if (center) center.style.removeProperty('--s')
+    }
+
     function pfScroll() {
-      if (reduced) {
-        setPct(100)
-        setRingOffset(0)
-        setRingVisible(true)
+      if (reduced || isMobileLayout()) {
+        resetRows()
+        setPct(isMobileLayout() ? 0 : 100)
+        setRingOffset(isMobileLayout() ? 339.3 : 0)
+        setRingVisible(!isMobileLayout())
         return
       }
       const r = stage.getBoundingClientRect()
@@ -113,8 +124,9 @@ export function Portfolio() {
               </svg>
               <span className="in">
                 <span className="pf-word">Portfolio</span>
-                <span className="pf-pct"><b>{pct}</b>%</span>
-                <span className="pf-hint">Scroll to explore</span>
+                <span className="pf-pct pf-pct-desktop"><b>{pct}</b>%</span>
+                <span className="pf-hint pf-hint-desktop">Scroll to explore</span>
+                <span className="pf-hint pf-hint-mobile">Swipe to explore</span>
               </span>
             </a>
           </div>
