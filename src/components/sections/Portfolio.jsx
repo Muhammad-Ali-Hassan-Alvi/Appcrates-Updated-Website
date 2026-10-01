@@ -1,31 +1,81 @@
 import { useEffect, useRef, useState } from 'react'
-import { PROJECTS } from '../../data/projects'
+import { PROJECTS, TILE_STYLE } from '../../data/projects'
 import { Button } from '../ui/Button'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 
 function Tile({ project }) {
-  const ink = project.ink || '#fff'
+  const t = TILE_STYLE[project.n] || { bg: '#222', dev: 'lap' }
+  const ink = t.ink || '#fff'
+  const accent = project.ac === '#fff' ? '#e67120' : project.ac
+
+  const device =
+    t.dev === 'ph' ? (
+      <div
+        className="ph"
+        style={{
+          '--scr': t.scr || '#111',
+          '--scr-ink': t.scrInk || '#fff',
+          '--acc': accent,
+        }}
+      >
+        <div>
+          {project.img ? (
+            <img className="ph-shot" src={project.img} alt="" />
+          ) : (
+            <>
+              <h6>{project.h}</h6>
+              <span className="row-f" />
+              <span className="row-f" />
+              <span className="row-f" />
+              <span className="cta-f" />
+            </>
+          )}
+        </div>
+      </div>
+    ) : (
+      <div className="lap" style={{ '--acc': accent, '--img': t.img }}>
+        <div className="scr">
+          <div>
+            {project.img ? (
+              <img className="scr-shot" src={project.img} alt={`${project.n} screenshot`} />
+            ) : (
+              <>
+                <div className="nav-f">
+                  <b /><b /><b /><b />
+                </div>
+                <div className="hero-f">
+                  <div>
+                    <h6>{project.h}</h6>
+                    <div className="btns">
+                      <b /><b />
+                    </div>
+                  </div>
+                  <div className="img" />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="base" />
+      </div>
+    )
 
   return (
-    <div className="pf-tile pf-tile--live" style={{ background: project.bg, color: ink }}>
-      <div className="pf-shot">
-        <div className="pf-shot-bar" aria-hidden="true">
-          <i /><i /><i />
+    <div className="pf-tile" style={{ background: t.bg, color: ink }}>
+      <span className="logo-chip">{project.n.slice(0, 2)}</span>
+      <h4>{project.h}</h4>
+      <span className="sub">
+        {project.n} · {project.ind}
+      </span>
+      {t.tech?.length > 0 && (
+        <div className="tech">
+          {t.tech.map((x) => (
+            <i key={x}>{x}</i>
+          ))}
         </div>
-        <img src={project.img} alt={`${project.n} live project screenshot`} loading="lazy" />
-      </div>
-      <div className="pf-meta">
-        <span className="logo-chip">{project.n.slice(0, 2)}</span>
-        <h4>{project.h}</h4>
-        <span className="sub">{project.n} · {project.ind}</span>
-        {project.tech?.length > 0 && (
-          <div className="tech">
-            {project.tech.map((x) => (
-              <i key={x}>{x}</i>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
+      <span className="ghost">{project.n.split(' ')[0]}</span>
+      {device}
     </div>
   )
 }
@@ -36,9 +86,8 @@ export function Portfolio() {
   const topRef = useRef(null)
   const botRef = useRef(null)
   const centerRef = useRef(null)
+  const ringRef = useRef(null)
   const [pct, setPct] = useState(0)
-  const [ringOffset, setRingOffset] = useState(339.3)
-  const [ringVisible, setRingVisible] = useState(false)
 
   const half = Math.ceil(PROJECTS.length / 2)
   const topList = PROJECTS.slice(0, half)
@@ -49,26 +98,19 @@ export function Portfolio() {
     const pfTop = topRef.current
     const pfBot = botRef.current
     const center = centerRef.current
+    const ring = ringRef.current
     if (!stage || !pfTop || !pfBot) return
 
-    function isMobileLayout() {
-      return window.matchMedia('(max-width: 700px)').matches
-    }
-
-    function resetRows() {
-      pfTop.style.transform = ''
-      pfBot.style.transform = ''
-      if (center) center.style.removeProperty('--s')
-    }
-
     function pfScroll() {
-      if (reduced || isMobileLayout()) {
-        resetRows()
-        setPct(isMobileLayout() ? 0 : 100)
-        setRingOffset(isMobileLayout() ? 339.3 : 0)
-        setRingVisible(!isMobileLayout())
+      if (reduced) {
+        setPct(100)
+        if (ring) {
+          ring.style.strokeDashoffset = '0'
+          ring.style.opacity = '1'
+        }
         return
       }
+
       const r = stage.getBoundingClientRect()
       const sticky = stage.querySelector('.pf-sticky')
       const stick = sticky ? sticky.offsetHeight : 0
@@ -82,8 +124,10 @@ export function Portfolio() {
 
       const v = Math.round(p * 100)
       setPct(v)
-      setRingOffset(339.3 * (1 - v / 100))
-      setRingVisible(v !== 0)
+      if (ring) {
+        ring.style.strokeDashoffset = (339.3 * (1 - v / 100)).toFixed(2)
+        ring.style.opacity = v === 0 ? '0' : '1'
+      }
       if (center) center.style.setProperty('--s', (0.92 + p * 0.12).toFixed(3))
     }
 
@@ -102,31 +146,26 @@ export function Portfolio() {
         <div className="pf-sticky">
           <div className="pf-row" id="pfTop" ref={topRef}>
             {[...topList, ...topList].map((p, i) => (
-              <Tile key={`${p.n}-top-${i}`} project={p} />
+              <Tile key={`${p.n}-t-${i}`} project={p} />
             ))}
           </div>
           <div className="pf-row" id="pfBottom" ref={botRef}>
             {[...botList, ...botList].map((p, i) => (
-              <Tile key={`${p.n}-bot-${i}`} project={p} />
+              <Tile key={`${p.n}-b-${i}`} project={p} />
             ))}
           </div>
           <div className="pf-center" id="pfCenter" ref={centerRef}>
             <a href="#services" className="pf-badge" aria-label="Skip past the portfolio">
               <svg viewBox="0 0 120 120" className="pf-ring" aria-hidden="true">
                 <circle cx="60" cy="60" r="54" className="bgc" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="54"
-                  className="fgc"
-                  style={{ strokeDashoffset: ringOffset, opacity: ringVisible ? 1 : 0 }}
-                />
+                <circle cx="60" cy="60" r="54" className="fgc" ref={ringRef} />
               </svg>
               <span className="in">
                 <span className="pf-word">Portfolio</span>
-                <span className="pf-pct pf-pct-desktop"><b>{pct}</b>%</span>
-                <span className="pf-hint pf-hint-desktop">Scroll to explore</span>
-                <span className="pf-hint pf-hint-mobile">Swipe to explore</span>
+                <span className="pf-pct">
+                  <b>{pct}</b>%
+                </span>
+                <span className="pf-hint">Scroll to explore</span>
               </span>
             </a>
           </div>
