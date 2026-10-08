@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
- * Pill tab group with a sliding indicator, mirroring the original
- * `.tabs` / `.ind` behaviour.
+ * Pill tab group. Active tab uses its own background — no absolute
+ * indicator that can mis-measure on wrap/scroll.
  *
  * tabs: [{ key, label }]
  * active: current active key
@@ -10,26 +10,30 @@ import { useEffect, useRef, useState } from 'react'
  */
 export function Tabs({ tabs, active, onChange, className = '' }) {
   const wrapRef = useRef(null)
-  const [ind, setInd] = useState({ left: 0, width: 0 })
+  const isFirstMount = useRef(true)
 
   useEffect(() => {
-    const update = () => {
-      const wrap = wrapRef.current
-      if (!wrap) return
-      const sel = wrap.querySelector('[aria-selected="true"]')
-      if (sel) setInd({ left: sel.offsetLeft, width: sel.offsetWidth })
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
     }
-    update()
-    window.addEventListener('resize', update)
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(update)
+    const wrap = wrapRef.current
+    if (!wrap) return
+    const sel = wrap.querySelector('[aria-selected="true"]')
+    if (!sel) return
+
+    // Scroll only within the horizontal tabs container without scrolling the window
+    const wrapRect = wrap.getBoundingClientRect()
+    const selRect = sel.getBoundingClientRect()
+    if (selRect.left < wrapRect.left) {
+      wrap.scrollLeft += selRect.left - wrapRect.left - 12
+    } else if (selRect.right > wrapRect.right) {
+      wrap.scrollLeft += selRect.right - wrapRect.right + 12
     }
-    return () => window.removeEventListener('resize', update)
   }, [active, tabs])
 
   return (
     <div className={`tabs ${className}`.trim()} role="tablist" ref={wrapRef}>
-      <span className="ind" style={{ left: ind.left, width: ind.width }}></span>
       {tabs.map((t) => (
         <button
           key={t.key}

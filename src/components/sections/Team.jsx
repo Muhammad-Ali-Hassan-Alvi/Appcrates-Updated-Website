@@ -3,7 +3,7 @@ import { TEAM_MEMBERS } from '../../data/team'
 
 export function Team() {
   return (
-    <section id="team" style={{ paddingTop: 20 }}>
+    <section id="team" className="team-sec">
       <div className="wrap">
         <div className="team-layout reveal">
           <div className="team-copy">
@@ -22,14 +22,16 @@ export function Team() {
           <div className="team-row">
             {TEAM_MEMBERS.map((m) => (
               <article className="member" key={m.name}>
-                <img
-                  src={m.photo}
-                  alt={m.name}
-                  className="member-photo"
-                  width={220}
-                  height={280}
-                  loading="lazy"
-                />
+                <div className="member-photo-wrap">
+                  <img
+                    src={m.photo}
+                    alt={m.name}
+                    className="member-photo"
+                    width={240}
+                    height={300}
+                    loading="lazy"
+                  />
+                </div>
                 <h3>{m.name}</h3>
                 <p>{m.role}</p>
               </article>

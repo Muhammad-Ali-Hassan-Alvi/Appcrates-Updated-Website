@@ -76,10 +76,10 @@ export function Hero() {
   }, [reduced])
 
   return (
-    <section className="hero">
-      <div className="orb" id="orb" ref={orbRef}></div>
+    <section id="top" className="hero">
+      <div className="orb" id="orb" ref={orbRef} aria-hidden="true"></div>
       <div className="wrap hero-grid">
-        <div>
+        <div className="hero-copy">
           <Pill className="fade-in" style={{ animationDelay: '.1s' }}>
             Now onboarding AI & product teams for Q4 2026
           </Pill>
@@ -98,7 +98,7 @@ export function Hero() {
             <Button href="#work" variant="ghost">See our work</Button>
           </div>
           <div className="hero-proof fade-in" style={{ animationDelay: '.75s' }}>
-            <div className="avatars">
+            <div className="avatars" aria-hidden="true">
               <span style={{ background: '#e67120' }}>AH</span>
               <span style={{ background: '#0a0404' }}>AM</span>
               <span style={{ background: '#8c4a1c' }}>AC</span>
@@ -111,12 +111,12 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="console-wrap fade-in" style={{ animationDelay: '.35s' }}>
-          <div className="float-card fc-ai">
-            <div className="ic"></div>
+        <div className="hero-visual fade-in" style={{ animationDelay: '.35s' }}>
+          <aside className="float-card fc-ai">
+            <div className="ic" aria-hidden="true"></div>
             We develop advanced AI technologies that power automation, predictive intelligence and
             data-driven systems at scale.
-          </div>
+          </aside>
           <div className="console" role="img" aria-label="Animated deployment log of an AI agent release">
             <div className="console-top">
               <i></i><i></i><i></i>
@@ -124,10 +124,10 @@ export function Hero() {
             </div>
             <div className="console-body" id="consoleBody" ref={consoleRef} aria-hidden={!consoleDone}></div>
           </div>
-          <div className="float-card fc-years">
+          <aside className="float-card fc-years">
             <strong><span data-count="12" ref={yearsRef}>0</span><em>+</em></strong>
             <span>Years of<br />experience</span>
-          </div>
+          </aside>
         </div>
       </div>
     </section>

@@ -36,25 +36,46 @@ export function Header() {
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth > 980) setOpen(false)
+      if (window.innerWidth > 1024) setOpen(false)
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY < 80) {
+        setActive('#top')
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const closeMenu = () => setOpen(false)
 
+  const handleNavClick = (e, href) => {
+    closeMenu()
+    if (href === '#top') {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      if (window.location.hash !== '#top') {
+        history.pushState(null, '', '#top')
+      }
+      setActive('#top')
+    }
+  }
+
   return (
-    <header id="top" className={scrolled ? 'scrolled' : ''}>
+    <header className={scrolled ? 'scrolled' : ''}>
       <nav className="wrap nav" aria-label="Main">
-        <a href="#top" className="logo" aria-label="AppCrates home">
-          <IconLogo className="logo-mark" />
-          <span>
-            <span className="logo-text">
-              <span className="a">App</span>Crates
-            </span>
-            <span className="logo-tag">Whatever We Do. We Deliver Best</span>
-          </span>
+        <a
+          href="#top"
+          className="logo"
+          aria-label="AppCrates home"
+          onClick={(e) => handleNavClick(e, '#top')}
+        >
+          <img src="/Logo.png" alt="AppCrates" className="logo-img" width="170" height="40" />
         </a>
         <ul className={`nav-links${open ? ' open' : ''}`} id="navLinks">
           {NAV_LINKS.map((link) => (
@@ -62,7 +83,7 @@ export function Header() {
               <a
                 href={link.href}
                 className={active === link.href ? 'active' : ''}
-                onClick={closeMenu}
+                onClick={(e) => handleNavClick(e, link.href)}
               >
                 {link.label}
               </a>

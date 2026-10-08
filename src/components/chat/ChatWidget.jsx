@@ -6,7 +6,6 @@ import { useReducedMotion } from '../../hooks/useReducedMotion'
 export function ChatWidget() {
   const [open, setOpen] = useState(false)
   const [greeted, setGreeted] = useState(false)
-  const [showNudge, setShowNudge] = useState(false)
   const [showQuick, setShowQuick] = useState(true)
   const [busy, setBusy] = useState(false)
   const [input, setInput] = useState('')
@@ -14,11 +13,7 @@ export function ChatWidget() {
   const bodyRef = useRef(null)
   const reduced = useReducedMotion()
 
-  const openChat = useCallback(() => {
-    setOpen(true)
-    setShowNudge(false)
-  }, [])
-
+  const openChat = useCallback(() => setOpen(true), [])
   const closeChat = useCallback(() => setOpen(false), [])
 
   // Listen for external open requests (FabRow dispatches this custom event).
@@ -35,14 +30,6 @@ export function ChatWidget() {
       setMessages((m) => [...m, { who: 'bot', text: GREETING }])
     }
   }, [open, greeted])
-
-  // Nudge bubble after a few seconds if the visitor hasn't opened chat yet.
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (!greeted) setShowNudge(true)
-    }, 5000)
-    return () => clearTimeout(t)
-  }, [greeted])
 
   // Close on Escape.
   useEffect(() => {
@@ -82,16 +69,7 @@ export function ChatWidget() {
   }
 
   return (
-    <>
-      {showNudge && !open && (
-        <div
-          className="chat-nudge"
-          style={{ position: 'fixed', right: 90, bottom: 26, zIndex: 61 }}
-        >
-          Need a developer? Ask me
-        </div>
-      )}
-      <div className={`chat${open ? ' open' : ''}`} id="chat" role="dialog" aria-label="AppCrates AI assistant">
+    <div className={`chat${open ? ' open' : ''}`} id="chat" role="dialog" aria-label="AppCrates AI assistant">
       <div className="chat-head">
         <div className="bot">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
@@ -146,7 +124,6 @@ export function ChatWidget() {
         </button>
       </form>
       <div className="chat-note">AI assistant. For quotes, our team confirms by email.</div>
-      </div>
-    </>
+    </div>
   )
 }

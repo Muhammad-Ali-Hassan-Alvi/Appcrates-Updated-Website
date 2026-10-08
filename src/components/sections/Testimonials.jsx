@@ -1,68 +1,53 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { TESTIMONIALS } from '../../data/testimonials'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 
-function perViewFor(width) {
-  if (width <= 640) return 1
-  if (width <= 980) return 2
-  return 3
+function Card({ t, i, dup = false }) {
+  return (
+    <div className={`tc v${(i % 3) + 1}`} aria-hidden={dup ? 'true' : undefined}>
+      <div className="tc-box">
+        <div className="tc-back"></div>
+        <div className="tc-front"></div>
+        <div className="tc-inner">
+          <h3>{t[0]}</h3>
+          <span className="tc-q" aria-hidden="true">
+            &ldquo;
+          </span>
+          <p>{t[1]}</p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function Testimonials() {
   const reduced = useReducedMotion()
   const viewRef = useRef(null)
   const trackRef = useRef(null)
-  const timerRef = useRef(null)
-  const touchXRef = useRef(null)
-  const [index, setIndex] = useState(0)
-  const [perView, setPerView] = useState(() => (typeof window !== 'undefined' ? perViewFor(window.innerWidth) : 3))
-
-  const pages = Math.ceil(TESTIMONIALS.length / perView)
-
-  const goTo = useCallback(
-    (i) => {
-      const n = pages
-      setIndex(((i % n) + n) % n)
-    },
-    [pages]
-  )
 
   useEffect(() => {
-    const onResize = () => setPerView(perViewFor(window.innerWidth))
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+    const view = viewRef.current
+    const track = trackRef.current
+    if (!view || !track || reduced) return
 
-  // Reset to first page if page count shrinks below current index.
-  useEffect(() => {
-    if (index >= pages) setIndex(0)
-  }, [pages, index])
-
-  useEffect(() => {
-    clearInterval(timerRef.current)
-    if (!reduced) {
-      timerRef.current = setInterval(() => goTo(index + 1), 5000)
+    let resumeTimer
+    const pause = () => {
+      track.classList.add('paused')
+      clearTimeout(resumeTimer)
     }
-    return () => clearInterval(timerRef.current)
-  }, [index, reduced, goTo])
+    const resume = () => {
+      clearTimeout(resumeTimer)
+      resumeTimer = setTimeout(() => track.classList.remove('paused'), 2500)
+    }
 
-  const first = Math.min(index * perView, TESTIMONIALS.length - perView)
-  const translate = -(first * (100 / perView))
-
-  const onMouseEnter = () => clearInterval(timerRef.current)
-  const onMouseLeave = () => {
-    clearInterval(timerRef.current)
-    if (!reduced) timerRef.current = setInterval(() => goTo(index + 1), 5000)
-  }
-  const onTouchStart = (e) => {
-    touchXRef.current = e.touches[0].clientX
-  }
-  const onTouchEnd = (e) => {
-    if (touchXRef.current === null) return
-    const d = e.changedTouches[0].clientX - touchXRef.current
-    if (Math.abs(d) > 40) goTo(index + (d < 0 ? 1 : -1))
-    touchXRef.current = null
-  }
+    view.addEventListener('touchstart', pause, { passive: true })
+    view.addEventListener('touchend', resume, { passive: true })
+    return () => {
+      view.removeEventListener('touchstart', pause)
+      view.removeEventListener('touchend', resume)
+      clearTimeout(resumeTimer)
+    }
+  }, [reduced])
 
   return (
     <section id="testimonials" className="tc-sec">
@@ -76,42 +61,16 @@ export function Testimonials() {
           ref={viewRef}
           aria-roledescription="carousel"
           aria-label="Client testimonials"
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
         >
-          <div
-            className="tc-track"
-            id="tcTrack"
-            ref={trackRef}
-            style={{ transform: `translateX(${translate}%)` }}
-          >
+          <div className="tc-track" id="tcTrack" ref={trackRef}>
             {TESTIMONIALS.map((t, i) => (
-              <div className={`tc v${(i % 3) + 1}`} key={i}>
-                <div className="tc-box">
-                  <div className="tc-back"></div>
-                  <div className="tc-front"></div>
-                  <div className="tc-inner">
-                    <h3>{t[0]}</h3>
-                    <span className="tc-role">{t[1]}</span>
-                    <span className="tc-q" aria-hidden="true">&ldquo;</span>
-                    <p>{t[2]}</p>
-                  </div>
-                </div>
-              </div>
+              <Card key={`a-${i}`} t={t} i={i} />
             ))}
+            {!reduced &&
+              TESTIMONIALS.map((t, i) => (
+                <Card key={`b-${i}`} t={t} i={i} dup />
+              ))}
           </div>
-        </div>
-        <div className="tc-dots" id="tcDots">
-          {Array.from({ length: pages }).map((_, i) => (
-            <button
-              key={i}
-              className={i === index ? 'on' : ''}
-              aria-label={`Show testimonials ${i + 1}`}
-              onClick={() => goTo(i)}
-            ></button>
-          ))}
         </div>
       </div>
     </section>

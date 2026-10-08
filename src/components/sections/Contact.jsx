@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IconTick } from '../icons/Icons'
 import { CALENDLY_URL, CONTACT } from '../../data/contact'
+import { OFFICES } from '../../data/offices'
 
 const SERVICE_CHOICES = ['Dedicated developers', 'Web app', 'Mobile app', 'AI / ML', 'UI/UX design']
 const BUDGET_CHOICES = ['Under $5k', '$5k–$20k', '$20k–$50k', '$50k+']
@@ -220,8 +221,17 @@ export function Contact() {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <span>
-                  <b>Office</b>
-                  {CONTACT.address}
+                  <b>Our offices</b>
+                  <span className="offices">
+                    {OFFICES.map((o) => (
+                      <span key={o.city}>
+                        {o.hq
+                          ? `${o.address}, ${o.country}`
+                          : `${o.city}, ${o.country}`}
+                        {o.hq ? <em>HQ</em> : null}
+                      </span>
+                    ))}
+                  </span>
                 </span>
               </li>
             </ul>

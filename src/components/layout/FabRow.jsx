@@ -1,5 +1,3 @@
-import { Button } from '../ui/Button'
-
 export const OPEN_CHAT_EVENT = 'appcrates:open-chat'
 
 export function FabRow({ onOpenChat }) {
@@ -13,9 +11,6 @@ export function FabRow({ onOpenChat }) {
 
   return (
     <div className="fab-row">
-      <Button href="#contact" variant="primary" className="fab-call">
-        Book a strategy call
-      </Button>
       <button
         className="chat-fab"
         id="chatFab"

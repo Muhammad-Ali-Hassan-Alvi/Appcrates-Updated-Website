@@ -2,6 +2,7 @@ import { IconSprites } from './components/icons/Icons.jsx'
 import { ScrollProgress } from './components/layout/ScrollProgress.jsx'
 import { Header } from './components/layout/Header.jsx'
 import { Footer } from './components/layout/Footer.jsx'
+import { LegalModals } from './components/layout/LegalModals.jsx'
 import { ChatWidget } from './components/chat/ChatWidget.jsx'
 import { FabRow } from './components/layout/FabRow.jsx'
 import { Hero } from './components/sections/Hero.jsx'
@@ -16,10 +17,17 @@ import { GlobalPresence } from './components/sections/GlobalPresence.jsx'
 import { Testimonials } from './components/sections/Testimonials.jsx'
 import { FAQ } from './components/sections/FAQ.jsx'
 import { Contact } from './components/sections/Contact.jsx'
+import { useEffect } from 'react'
 import { useTheme } from './hooks/useTheme.js'
 
 export default function App() {
   useTheme()
+
+  useEffect(() => {
+    if (!window.location.hash || window.location.hash === '#top') {
+      window.scrollTo(0, 0)
+    }
+  }, [])
 
   return (
     <>
@@ -41,6 +49,7 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <LegalModals />
       <FabRow />
       <ChatWidget />
     </>

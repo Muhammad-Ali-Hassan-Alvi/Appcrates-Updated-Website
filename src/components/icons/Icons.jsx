@@ -69,8 +69,11 @@ export function IconTick({ className, width, height }) {
 
 export function IconLogo({ className, style }) {
   return (
-    <svg className={className} style={style}>
-      <use href="#i-logo" />
-    </svg>
+    <img
+      src="/Logo.png"
+      alt="AppCrates"
+      className={className || 'logo-img'}
+      style={style}
+    />
   )
 }
