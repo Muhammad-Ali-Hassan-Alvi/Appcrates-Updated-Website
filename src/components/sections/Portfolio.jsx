@@ -15,31 +15,9 @@ function Tile({ project }) {
   const t = TILE_STYLE[project.n] || { bg: '#222', dev: 'lap' }
   const ink = t.ink || '#fff'
   const accent = project.ac === '#fff' ? '#e67120' : project.ac
-  const twin = Array.isArray(project.img)
 
-  let device = null
-  if (twin) {
-    device = (
-      <>
-        <div className="ph back">
-          <Shot src={project.img[1]} alt={`${project.n} screenshot`} />
-        </div>
-        <div className="ph">
-          <Shot src={project.img[0]} alt={`${project.n} screenshot`} />
-        </div>
-      </>
-    )
-  } else if (project.img) {
-    device = (
-      <div className="lap" style={{ '--acc': accent, '--img': t.img }}>
-        <div className="scr">
-          <Shot src={project.img} alt={`${project.n} screenshot`} />
-        </div>
-        <div className="base" />
-      </div>
-    )
-  } else if (t.dev === 'ph') {
-    device = (
+  const device =
+    t.dev === 'ph' ? (
       <div
         className="ph"
         style={{
@@ -49,40 +27,49 @@ function Tile({ project }) {
         }}
       >
         <div>
-          <h6>{project.h}</h6>
-          <span className="row-f" />
-          <span className="row-f" />
-          <span className="row-f" />
-          <span className="cta-f" />
+          {project.img ? (
+            <img className="ph-shot" src={project.img} alt="" />
+          ) : (
+            <>
+              <h6>{project.h}</h6>
+              <span className="row-f" />
+              <span className="row-f" />
+              <span className="row-f" />
+              <span className="cta-f" />
+            </>
+          )}
         </div>
       </div>
-    )
-  } else {
-    device = (
+    ) : (
       <div className="lap" style={{ '--acc': accent, '--img': t.img }}>
         <div className="scr">
           <div>
-            <div className="nav-f">
-              <b /><b /><b /><b />
-            </div>
-            <div className="hero-f">
-              <div>
-                <h6>{project.h}</h6>
-                <div className="btns">
-                  <b /><b />
+            {project.img ? (
+              <img className="scr-shot" src={project.img} alt={`${project.n} screenshot`} />
+            ) : (
+              <>
+                <div className="nav-f">
+                  <b /><b /><b /><b />
                 </div>
-              </div>
-              <div className="img" />
-            </div>
+                <div className="hero-f">
+                  <div>
+                    <h6>{project.h}</h6>
+                    <div className="btns">
+                      <b /><b />
+                    </div>
+                  </div>
+                  <div className="img" />
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="base" />
       </div>
     )
-  }
 
   return (
-    <div className={`pf-tile${twin ? ' twin' : ''}`} style={{ background: t.bg, color: ink }}>
+    <div className="pf-tile" style={{ background: t.bg, color: ink }}>
       <span className="logo-chip">{project.n.slice(0, 2)}</span>
       <h4>{project.h}</h4>
       <span className="sub">
@@ -128,12 +115,6 @@ export function Portfolio() {
   const centerRef = useRef(null)
   const ringRef = useRef(null)
   const [pct, setPct] = useState(0)
-  const [useScroller, setUseScroller] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(min-width: 1024px)').matches &&
-        !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : true
-  )
 
   const topList = PROJECTS.filter((p) => p.c === 'Mobile')
   const botList = PROJECTS.filter((p) => p.c === 'Web')
@@ -161,6 +142,15 @@ export function Portfolio() {
     if (!stage || !pfTop || !pfBot) return
 
     function pfScroll() {
+      if (reduced) {
+        setPct(100)
+        if (ring) {
+          ring.style.strokeDashoffset = '0'
+          ring.style.opacity = '1'
+        }
+        return
+      }
+
       const r = stage.getBoundingClientRect()
       const sticky = stage.querySelector('.pf-sticky')
       const stick = sticky ? sticky.offsetHeight : 0
@@ -193,49 +183,35 @@ export function Portfolio() {
 
   return (
     <section id="work" className="pf">
-      <div className="wrap pf-head">
-        <h2>Selected work</h2>
-        <p className="lede">Live products we&apos;ve engineered — real screenshots from shipping apps.</p>
-      </div>
-
-      {useScroller ? (
-        <div className="pf-stage" id="pfStage" ref={stageRef}>
-          <div className="pf-sticky">
-            <div className="pf-row" id="pfTop" ref={topRef}>
-              {[...topList, ...topList].map((p, i) => (
-                <Tile key={`${p.n}-t-${i}`} project={p} />
-              ))}
-            </div>
-            <div className="pf-row" id="pfBottom" ref={botRef}>
-              {[...botList, ...botList].map((p, i) => (
-                <Tile key={`${p.n}-b-${i}`} project={p} />
-              ))}
-            </div>
-            <div className="pf-center" id="pfCenter" ref={centerRef}>
-              <a href="#services" className="pf-badge" aria-label="Skip past the portfolio">
-                <svg viewBox="0 0 120 120" className="pf-ring" aria-hidden="true">
-                  <circle cx="60" cy="60" r="54" className="bgc" />
-                  <circle cx="60" cy="60" r="54" className="fgc" ref={ringRef} />
-                </svg>
-                <span className="in">
-                  <span className="pf-word">Portfolio</span>
-                  <span className="pf-pct">
-                    <b>{pct}</b>%
-                  </span>
-                  <span className="pf-hint">Scroll to explore</span>
+      <div className="pf-stage" id="pfStage" ref={stageRef}>
+        <div className="pf-sticky">
+          <div className="pf-row" id="pfTop" ref={topRef}>
+            {[...topList, ...topList].map((p, i) => (
+              <Tile key={`${p.n}-t-${i}`} project={p} />
+            ))}
+          </div>
+          <div className="pf-row" id="pfBottom" ref={botRef}>
+            {[...botList, ...botList].map((p, i) => (
+              <Tile key={`${p.n}-b-${i}`} project={p} />
+            ))}
+          </div>
+          <div className="pf-center" id="pfCenter" ref={centerRef}>
+            <a href="#services" className="pf-badge" aria-label="Skip past the portfolio">
+              <svg viewBox="0 0 120 120" className="pf-ring" aria-hidden="true">
+                <circle cx="60" cy="60" r="54" className="bgc" />
+                <circle cx="60" cy="60" r="54" className="fgc" ref={ringRef} />
+              </svg>
+              <span className="in">
+                <span className="pf-word">Portfolio</span>
+                <span className="pf-pct">
+                  <b>{pct}</b>%
                 </span>
-              </a>
-            </div>
+                <span className="pf-hint">Scroll to explore</span>
+              </span>
+            </a>
           </div>
         </div>
-      ) : (
-        <div className="wrap pf-grid">
-          {PROJECTS.map((p) => (
-            <ProjectCard key={p.n} project={p} />
-          ))}
-        </div>
-      )}
-
+      </div>
       <div className="wrap">
         <div className="center-cta">
           <Button href="#contact" variant="primary" showArrow>
